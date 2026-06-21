@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AuraClip AI — UI v2.1 (bottom nav + light/dark)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- THEME TOKENS ---------- */
+  :root, [data-theme="dark"]{
+    --bg-1:#1a0e3a; --bg-2:#2e1454; --bg-3:#1a0e3a;
+    --text:#F5F2FA; --text-dim:rgba(245,242,250,0.62);
+    --glass:rgba(255,255,255,0.08); --glass-strong:rgba(255,255,255,0.12);
+    --glass-line:rgba(255,255,255,0.16);
+    --blur-tint: rgba(20,8,40,0.35);
+    --blob-op:0.5;
+    --tab-active:#ff5fa8;
+    --card-shadow: 0 20px 50px -20px rgba(10,2,30,0.8);
+  }
+  [data-theme="light"]{
+    --bg-1:#ffffff; --bg-2:#f4f1fa; --bg-3:#efeaf8;
+    --text:#1A1030; --text-dim:rgba(26,16,48,0.55);
+    --glass:rgba(255,255,255,0.55); --glass-strong:rgba(255,255,255,0.7);
+    --glass-line:rgba(120,90,160,0.22);
+    --blur-tint: rgba(255,255,255,0.4);
+    --blob-op:0.22;
+    --tab-active:#9b2fb0;
+    --card-shadow: 0 20px 45px -22px rgba(120,80,160,0.4);
+  }
+
+  --pink:#ff5fa8; --cyan:#5fd0ff; --amber:#ffb347; --purple-btn:#b85fff;
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh;
+    background:#0d0720;
+    font-family:'Inter',sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    padding:30px 16px 60px;
+  }
+  .display{ font-family:'Space Grotesk',sans-serif; }
+
+  .toolbar{
+    display:flex; gap:10px; align-items:center;
+    background:#1b1140; padding:10px 14px; border-radius:30px;
+    border:1px solid rgba(255,255,255,0.1);
+  }
+  .toolbar span{ color:#cfc6e8; font-size:12px; font-family:'JetBrains Mono',monospace; }
+  .toolbar button{
+    border:none; cursor:pointer; padding:7px 14px; border-radius:20px;
+    font-size:12px; font-weight:600; font-family:'Inter';
+  }
+  .toolbar button.on{ background:linear-gradient(90deg,#ff5fa8,#5fd0ff); color:#1a0e2e; }
+  .toolbar button.off{ background:transparent; color:#9a8fc0; border:1px solid rgba(255,255,255,0.15); }
+
+  .phones{ display:flex; gap:30px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+
+  .phone{
+    width:300px; height:640px; border-radius:42px; padding:12px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.18);
+    box-shadow:0 30px 60px -20px rgba(10,2,30,0.7);
+    position:relative;
+  }
+  .screen{
+    width:100%; height:100%; border-radius:30px; overflow:hidden; position:relative;
+    background:linear-gradient(180deg, var(--bg-1), var(--bg-2) 55%, var(--bg-3));
+    color:var(--text);
+    transition: background .35s, color .35s;
+    display:flex; flex-direction:column;
+  }
+  .blob{ position:absolute; border-radius:50%; filter:blur(48px); opacity:var(--blob-op); transition:opacity .35s; }
+
+  .statusbar{ display:flex; justify-content:space-between; padding:14px 22px 2px; font-size:13px; font-weight:600; position:relative; z-index:3; }
+
+  /* contextual top header */
+  .ctx-header{ display:flex; align-items:center; justify-content:space-between; padding:6px 20px 4px; position:relative; z-index:3; }
+  .ctx-title{ font-size:17px; font-weight:700; font-family:'Space Grotesk'; }
+  .credits-pill{
+    display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+    background:var(--glass); border:1px solid var(--glass-line); padding:6px 11px; border-radius:20px;
+    backdrop-filter:blur(12px);
+  }
+  .credits-pill .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); }
+
+  .body{ flex:1; overflow:hidden; padding:8px 16px 0; position:relative; z-index:3; }
+
+  .glass{
+    background:var(--glass); border:1px solid var(--glass-line);
+    backdrop-filter:blur(16px); border-radius:18px; box-shadow:var(--card-shadow);
+  }
+
+  /* home stats */
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .stat{ padding:14px; }
+  .stat .label{ font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; }
+  .stat .val{ font-size:22px; font-weight:700; font-family:'Space Grotesk'; margin-top:6px; }
+  .stat .val.pink{ color:var(--pink); } .stat .val.cyan{ color:var(--cyan); }
+
+  .section-label{ font-size:12px; font-weight:700; margin:6px 2px 10px; }
+  .proj{ display:flex; gap:12px; padding:10px; margin-bottom:10px; align-items:center; }
+  .proj-thumb{ width:64px; height:46px; border-radius:10px; flex-shrink:0;
+    background:radial-gradient(circle at 30% 30%, #ff8fc4, transparent 60%), radial-gradient(circle at 70% 70%, #5fb8ff, transparent 60%), #2a1452; }
+  .proj .t{ font-size:13px; font-weight:600; }
+  .proj .m{ font-size:11px; color:var(--text-dim); margin-top:3px; font-family:'JetBrains Mono',monospace; }
+  .chip{ font-size:9.5px; padding:3px 8px; border-radius:12px; font-weight:600; }
+  .chip.ready{ background:rgba(95,208,255,0.18); color:var(--cyan); }
+  .chip.proc{ background:rgba(255,179,71,0.18); color:var(--amber); }
+
+  /* bottom tab bar */
+  .tabbar{
+    position:relative; z-index:5; margin:0 14px 14px; padding:10px 8px;
+    display:flex; align-items:flex-end; justify-content:space-around;
+    background:var(--glass-strong); border:1px solid var(--glass-line);
+    border-radius:26px; backdrop-filter:blur(20px); box-shadow:var(--card-shadow);
+  }
+  .tab{ display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+  .tab .ic{ font-size:18px; color:var(--text-dim); }
+  .tab .lb{ font-size:9.5px; color:var(--text-dim); font-weight:600; }
+  .tab.active .ic, .tab.active .lb{ color:var(--tab-active); }
+  .tab.create{ margin-top:-26px; }
+  .create-btn{
+    width:54px; height:54px; border-radius:50%; border:none;
+    background:linear-gradient(135deg, var(--pink), var(--cyan));
+    display:flex; align-items:center; justify-content:center; font-size:24px; color:#1a0e2e;
+    box-shadow:0 8px 20px -4px rgba(255,95,168,0.6);
+  }
+
+  .label-under{ color:#8f84b8; font-size:12px; font-family:'Space Grotesk'; text-align:center; margin-top:4px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span>Theme:</span>
+  <button class="on" id="btn-dark" onclick="setTheme('dark')">Dark</button>
+  <button class="off" id="btn-light" onclick="setTheme('light')">Light</button>
+</div>
+
+<div class="phones">
+
+  <!-- HOME -->
+  <div>
+    <div class="phone">
+      <div class="screen" data-theme="dark" id="screen-home">
+        <div class="blob" style="width:200px;height:200px;background:#ff5fa8;top:-50px;left:-40px;"></div>
+        <div class="blob" style="width:180px;height:180px;background:#5fd0ff;bottom:120px;right:-50px;"></div>
+        <div class="statusbar"><span>9:41</span><span>▂▄▆ 📶 🔋</span></div>
+        <div class="ctx-header">
+          <div class="ctx-title">Home</div>
+          <div class="credits-pill"><span class="dot"></span>214 credits</div>
+        </div>
+        <div class="body">
+          <div class="stat-grid">
+            <div class="glass stat"><div class="label">Credits left</div><div class="val pink">214</div></div>
+            <div class="glass stat"><div class="label">Avg score</div><div class="val cyan">8.2</div></div>
+          </div>
+          <div class="section-label">Recent projects</div>
+          <div class="glass proj">
+            <div class="proj-thumb"></div>
+            <div style="flex:1;"><div class="t">Podcast Ep. 114</div><div class="m">6 clips · 42:18</div></div>
+            <div class="chip ready">Ready</div>
+          </div>
+          <div class="glass proj">
+            <div class="proj-thumb"></div>
+            <div style="flex:1;"><div class="t">Webinar — Pricing</div><div class="m">processing · 58:02</div></div>
+            <div class="chip proc">Clips</div>
+          </div>
+          <div class="glass proj">
+            <div class="proj-thumb"></div>
+            <div style="flex:1;"><div class="t">Founder AMA</div><div class="m">8 clips · 21:44</div></div>
+            <div class="chip ready">Ready</div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab active"><div class="ic">⌂</div><div class="lb">Home</div></div>
+          <div class="tab"><div class="ic">🎬</div><div class="lb">Projects</div></div>
+          <div class="tab create"><button class="create-btn">＋</button></div>
+          <div class="tab"><div class="ic">↺</div><div class="lb">History</div></div>
+          <div class="tab"><div class="ic">◔</div><div class="lb">Account</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="label-under">Home · bottom nav</div>
+  </div>
+
+  <!-- HISTORY -->
+  <div>
+    <div class="phone">
+      <div class="screen" data-theme="dark" id="screen-hist">
+        <div class="blob" style="width:190px;height:190px;background:#b85fff;top:-40px;right:-40px;"></div>
+        <div class="blob" style="width:170px;height:170px;background:#5fd0ff;bottom:130px;left:-40px;"></div>
+        <div class="statusbar"><span>9:41</span><span>▂▄▆ 📶 🔋</span></div>
+        <div class="ctx-header"><div class="ctx-title">History</div><div class="credits-pill" style="background:transparent;border:none;">⋮</div></div>
+        <div class="body">
+          <div class="section-label">Rendered clips</div>
+          <div class="glass proj"><div class="proj-thumb"></div><div style="flex:1;"><div class="t">Rest isn't a reward</div><div class="m">0:46 · downloaded</div></div><div class="ic" style="font-size:16px;">⬇</div></div>
+          <div class="glass proj"><div class="proj-thumb"></div><div style="flex:1;"><div class="t">Calendar is lying</div><div class="m">0:39 · downloaded</div></div><div class="ic" style="font-size:16px;">⬇</div></div>
+          <div class="glass proj"><div class="proj-thumb"></div><div style="flex:1;"><div class="t">The $40K mistake</div><div class="m">0:46 · rendering…</div></div><div class="chip proc">42%</div></div>
+          <div class="glass proj"><div class="proj-thumb"></div><div style="flex:1;"><div class="t">Sustainable growth</div><div class="m">0:47 · downloaded</div></div><div class="ic" style="font-size:16px;">⬇</div></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><div class="ic">⌂</div><div class="lb">Home</div></div>
+          <div class="tab"><div class="ic">🎬</div><div class="lb">Projects</div></div>
+          <div class="tab create"><button class="create-btn">＋</button></div>
+          <div class="tab active"><div class="ic">↺</div><div class="lb">History</div></div>
+          <div class="tab"><div class="ic">◔</div><div class="lb">Account</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="label-under">History tab</div>
+  </div>
+
+  <!-- ACCOUNT (light mode demo on this one by default-ish, but follows toggle) -->
+  <div>
+    <div class="phone">
+      <div class="screen" data-theme="dark" id="screen-acct">
+        <div class="blob" style="width:190px;height:190px;background:#ff5fa8;top:-40px;left:-40px;"></div>
+        <div class="blob" style="width:160px;height:160px;background:#ffb347;bottom:140px;right:-40px;"></div>
+        <div class="statusbar"><span>9:41</span><span>▂▄▆ 📶 🔋</span></div>
+        <div class="ctx-header"><div class="ctx-title">Account</div></div>
+        <div class="body">
+          <div class="glass" style="padding:16px; display:flex; gap:12px; align-items:center; margin-bottom:14px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff5fa8,#5fd0ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#1a0e2e;">LK</div>
+            <div><div style="font-weight:600;font-size:14px;">Lav</div><div style="font-size:11px;color:var(--text-dim);">Pro plan · renews Jul 18</div></div>
+          </div>
+          <div class="glass" style="padding:4px 16px; margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--glass-line);"><span style="font-size:13px;">Appearance</span><span style="font-size:12px;color:var(--text-dim);">System ▸</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--glass-line);"><span style="font-size:13px;">Billing &amp; plan</span><span style="color:var(--text-dim);">▸</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;"><span style="font-size:13px;">Buy credit top-up</span><span style="color:var(--text-dim);">▸</span></div>
+          </div>
+          <div class="section-label">This is the glass look in both themes →</div>
+        </div>
+        <div class="tabbar">
+          <div class="tab"><div class="ic">⌂</div><div class="lb">Home</div></div>
+          <div class="tab"><div class="ic">🎬</div><div class="lb">Projects</div></div>
+          <div class="tab create"><button class="create-btn">＋</button></div>
+          <div class="tab"><div class="ic">↺</div><div class="lb">History</div></div>
+          <div class="tab active"><div class="ic">◔</div><div class="lb">Account</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="label-under">Account · theme toggle lives here</div>
+  </div>
+
+</div>
+
+<script>
+  function setTheme(mode){
+    document.querySelectorAll('.screen').forEach(s => s.setAttribute('data-theme', mode));
+    document.getElementById('btn-dark').className = mode==='dark' ? 'on' : 'off';
+    document.getElementById('btn-light').className = mode==='light' ? 'on' : 'off';
+  }
+</script>
+
+</body>
+</html>
