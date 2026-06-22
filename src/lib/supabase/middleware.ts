@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // List of routes that require the user to be logged in.
-  const protectedRoutes = ["/dashboard"];
+  const protectedRoutes = ["/home", "/projects", "/create", "/history", "/account", "/dashboard"];
   const isProtected = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route),
   );

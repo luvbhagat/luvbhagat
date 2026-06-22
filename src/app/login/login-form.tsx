@@ -50,9 +50,9 @@ export function LoginForm() {
       if (error) {
         setError(error.message);
       } else {
-        // Logged in — go to the dashboard. refresh() makes the server
+        // Logged in â€” go to the dashboard. refresh() makes the server
         // re-read the new session cookie.
-        router.push("/dashboard");
+        router.push("/home");
         router.refresh();
       }
     }
@@ -110,7 +110,7 @@ export function LoginForm() {
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             minLength={6}
@@ -128,7 +128,7 @@ export function LoginForm() {
           disabled={loading}
         >
           {loading
-            ? "Please wait…"
+            ? "Please waitâ€¦"
             : mode === "signin"
               ? "Sign in"
               : "Create account"}
