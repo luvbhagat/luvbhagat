@@ -36,7 +36,6 @@ export default async function ProjectPage({
   const video = data as Video;
   const duration = formatDuration(video.duration_sec);
 
-  // Detected clip candidates (highest score first).
   const { data: clipData } = await supabase
     .from("clips")
     .select("*")
@@ -100,34 +99,35 @@ export default async function ProjectPage({
                     Number(clip.end_sec) - Number(clip.start_sec),
                   );
                   return (
-                    <li
-                      key={clip.id}
-                      className="glass flex flex-col gap-2 rounded-2xl p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="font-medium">{clip.title}</p>
-                        <span
-                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${scoreColor(
-                            clip.score,
-                          )}`}
-                        >
-                          {clip.score}
-                        </span>
-                      </div>
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {clip.transcript_slice?.text}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {len} · starts at{" "}
-                        {formatDuration(Number(clip.start_sec)) ?? "0:00"}
-                      </p>
+                    <li key={clip.id}>
+                      <Link
+                        href={`/projects/${video.id}/clips/${clip.id}`}
+                        className="glass flex flex-col gap-2 rounded-2xl p-4 transition-transform hover:scale-[1.01]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium">{clip.title}</p>
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${scoreColor(
+                              clip.score,
+                            )}`}
+                          >
+                            {clip.score}
+                          </span>
+                        </div>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">
+                          {clip.transcript_slice?.text}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {len} · starts at{" "}
+                          {formatDuration(Number(clip.start_sec)) ?? "0:00"}
+                        </p>
+                      </Link>
                     </li>
                   );
                 })}
               </ul>
               <p className="text-xs text-muted-foreground">
-                Next up (PRD Phase 3-4): open a clip in the editor to caption,
-                trim, and render it to a downloadable vertical MP4.
+                Tap a clip to caption, trim, and preview it in the editor.
               </p>
             </section>
           )}

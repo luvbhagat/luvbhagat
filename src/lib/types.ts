@@ -35,5 +35,19 @@ export type Clip = {
   transcript_slice: Transcript | null;
   status: ClipStatus;
   output_key: string | null;
+  edit_config: EditConfig | null;
   created_at: string;
 };
+export type CaptionStyle = "karaoke" | "reveal" | "clean";
+export type CaptionPosition = "bottom" | "center" | "top";
+
+export type EditConfig = {
+  trim: { startSec: number; endSec: number };
+  captions: {
+    style: CaptionStyle;
+    position: CaptionPosition;
+    accent: string;
+  };
+};
+
+export const DEFAULT_ACCENT = "#5fd0ff";
