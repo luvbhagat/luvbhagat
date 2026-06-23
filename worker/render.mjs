@@ -25,6 +25,8 @@ if (!URL || !KEY) {
   process.exit(1);
 }
 
+const RENDER_COST = 10; // keep in sync with src/lib/credits.ts
+
 const supabase = createClient(URL, KEY, {
   auth: { persistSession: false },
 });
@@ -225,6 +227,13 @@ async function main() {
         .from("clips")
         .update({ status: "failed" })
         .eq("id", clip.id);
+      // Refund the credits charged at render time.
+      await supabase.rpc("grant_credits", {
+        p_user: clip.user_id,
+        p_amount: RENDER_COST,
+        p_reason: "refund",
+        p_ref: clip.id,
+      });
     }
   }
   console.log("Done.");
