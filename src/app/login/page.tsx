@@ -41,6 +41,15 @@ export default async function LoginPage() {
       <p className="mt-6 text-center text-xs text-muted-foreground">
         By continuing you agree to the AuraClip AI Terms &amp; Privacy Policy.
       </p>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        Setup not working?{" "}
+        <Link
+          href="/setup"
+          className="underline underline-offset-4 hover:text-foreground"
+        >
+          Run the setup check
+        </Link>
+      </p>
     </div>
   );
 }
