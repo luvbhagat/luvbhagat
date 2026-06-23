@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Renders a clip's edit_config to a downloadable vertical MP4.
-//
-// Video rendering (Remotion + headless Chromium / FFmpeg) cannot run on
-// Vercel's serverless functions — it needs a dedicated render host such as
-// Remotion Lambda (AWS). That host is not configured yet, so for now we
-// validate the request and return a clear, actionable message.
-//
-// When the render host is ready, this route will: load the clip + its
-// edit_config, enqueue a render job, and (on completion) store the MP4 in
-// Supabase Storage and set the clip status to "ready" with an output_key.
+// Queues a clip for rendering. The actual MP4 render (FFmpeg, captions burned
+// in) runs in a separate worker process — see worker/render.mjs and
+// docs/PHASE-3B-RENDER.md — because video rendering can't run on Vercel.
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ clipId: string }> },
@@ -27,18 +20,25 @@ export async function POST(
 
   const { data: clip } = await supabase
     .from("clips")
-    .select("id, edit_config")
+    .select("id, status")
     .eq("id", clipId)
     .single();
   if (!clip) {
     return NextResponse.json({ error: "Clip not found" }, { status: 404 });
   }
 
+  const { error } = await supabase
+    .from("clips")
+    .update({ status: "queued" })
+    .eq("id", clipId);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
   return NextResponse.json({
-    ok: false,
+    ok: true,
     message:
-      "Your edits are saved. Rendering to MP4 needs a video render host " +
-      "(Remotion Lambda on AWS) which isn't connected yet — that's the next " +
-      "setup step. See docs/PHASE-3-EDITOR.md.",
+      "Queued for rendering. Run the render worker (npm run worker) to produce " +
+      "the MP4 — it will then appear under History.",
   });
 }
