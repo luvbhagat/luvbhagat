@@ -1,4 +1,4 @@
-# AuraClip AI — Setup & Deploy Guide
+# Cliporo AI — Setup & Deploy Guide
 
 This guide is written for someone new to coding. Follow it top to bottom.
 Every command goes in your terminal (the black box where you type), run from
@@ -8,7 +8,7 @@ inside the project folder.
 
 ## 0. What you have right now
 
-A working **auth skeleton** — the foundation of AuraClip AI. No video features
+A working **auth skeleton** — the foundation of Cliporo AI. No video features
 yet. It includes:
 
 - A landing page (`/`)
@@ -55,7 +55,7 @@ Supabase is a free service that handles user accounts for you.
 ### 2.1 Create the project
 
 1. Go to **https://supabase.com** and sign up (free).
-2. Click **New project**. Give it a name (e.g. "auraclip"), pick a strong
+2. Click **New project**. Give it a name (e.g. "cliporo"), pick a strong
    database password (save it somewhere), choose a region near you, **Create**.
 3. Wait ~2 minutes for it to finish setting up.
 
@@ -89,7 +89,7 @@ This has two parts: get Google credentials, then paste them into Supabase.
 1. Go to **https://console.cloud.google.com**.
 2. Create a new project (top bar → project dropdown → New Project).
 3. Go to **APIs & Services** → **OAuth consent screen**. Choose **External**,
-   fill in the app name ("AuraClip AI"), your email, and save. Add yourself as
+   fill in the app name ("Cliporo AI"), your email, and save. Add yourself as
    a **Test user** while developing.
 4. Go to **APIs & Services** → **Credentials** → **Create Credentials** →
    **OAuth client ID**.
@@ -129,7 +129,7 @@ If this project is not already connected to a GitHub repo of your own:
 ```bash
 # Stage and commit your work
 git add .
-git commit -m "AuraClip AI auth foundation"
+git commit -m "Cliporo AI auth foundation"
 
 # Push to your branch
 git push -u origin claude/auraclip-foundation-setup-q5x450
@@ -166,10 +166,10 @@ Then click **Deploy** and wait a minute or two.
 
 ### 5.3 Point Supabase + Google at the live URL
 
-After deploying, Vercel gives you a URL like `https://auraclip.vercel.app`.
+After deploying, Vercel gives you a URL like `https://cliporo.vercel.app`.
 
 1. **Supabase** → **Authentication** → **URL Configuration**:
-   - Add `https://auraclip.vercel.app/auth/callback` to **Redirect URLs**.
+   - Add `https://cliporo.vercel.app/auth/callback` to **Redirect URLs**.
    - (Optionally update **Site URL** to the Vercel URL.)
 2. **Google Cloud Console** → your OAuth client → **Authorized redirect URIs**
    already points at Supabase's callback, so no change needed there — Google

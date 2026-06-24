@@ -1,4 +1,4 @@
-# AuraClip AI — PRD Addendum v2.1
+# Cliporo AI — PRD Addendum v2.1
 ## UI / Navigation & Theming Update
 
 This addendum amends the **front-end specification** of PRD v2.0. Backend,
@@ -135,6 +135,6 @@ consistency; only surfaces/text/background swap.
   FFmpeg pipeline, Stripe billing, and the API surface from PRD v2.0 are
   unchanged.
 - No wardrobe / fashion-store feature is included — that belongs to a different
-  product (AI Trial Room), not AuraClip.
+  product (AI Trial Room), not Cliporo.
 - The core loop is still: upload → transcribe → detect clips → edit → render →
   download.

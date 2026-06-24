@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ───────────────────────────────────────────────────────────────────────────
-   AuraClip AI brand tokens
+   Cliporo AI brand tokens
    Pulled from the product mockups: violet base, pink/cyan/amber accents,
    glassmorphism surfaces. These stay constant for brand consistency.
    ─────────────────────────────────────────────────────────────────────────── */
@@ -40,7 +40,7 @@
 }
 
 .dark {
-  /* Dark surface tokens — the signature AuraClip violet look */
+  /* Dark surface tokens — the signature Cliporo violet look */
   --background: #1a0e3a;
   --foreground: #f5f2fa;
   --card: rgba(255, 255, 255, 0.08);

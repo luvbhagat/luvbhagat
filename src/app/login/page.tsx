@@ -23,7 +23,7 @@ export default async function LoginPage() {
           <Sparkles className="size-5" />
         </span>
         <span className="font-display text-xl font-semibold">
-          AuraClip <span className="text-brand-gradient">AI</span>
+          Cliporo <span className="text-brand-gradient">AI</span>
         </span>
       </Link>
 
@@ -39,7 +39,7 @@ export default async function LoginPage() {
       </div>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        By continuing you agree to the AuraClip AI Terms &amp; Privacy Policy.
+        By continuing you agree to the Cliporo AI Terms &amp; Privacy Policy.
       </p>
       <p className="mt-2 text-center text-xs text-muted-foreground">
         Setup not working?{" "}

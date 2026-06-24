@@ -1,4 +1,4 @@
-# AuraClip AI — PRD Addendum v2.2
+# Cliporo AI — PRD Addendum v2.2
 ## Clip Editor (Live Preview, Captions & Transitions)
 
 Amends PRD v2.0 / v2.1. This section replaces the earlier "Captions (single

@@ -1,4 +1,4 @@
-# AuraClip AI — Product Requirements Document (Master)
+# Cliporo AI — Product Requirements Document (Master)
 
 **Version:** 3.0 (consolidated master)
 **Status:** Draft for build
@@ -17,7 +17,7 @@
 ## 1. Overview
 
 ### 1.1 One-liner
-AuraClip AI turns long videos into short, vertical, auto-captioned clips ready
+Cliporo AI turns long videos into short, vertical, auto-captioned clips ready
 to post on TikTok, Instagram Reels, and YouTube Shorts.
 
 ### 1.2 The problem
@@ -29,7 +29,7 @@ is slow, repetitive, and requires editing skill. Most people never do it, so
 their best content never reaches a short-form audience.
 
 ### 1.3 The solution
-Upload a long video. AuraClip AI:
+Upload a long video. Cliporo AI:
 1. Transcribes it.
 2. Uses AI to detect the most engaging, self-contained moments ("clips").
 3. Auto-crops each to vertical 9:16 and adds animated word-level captions.
@@ -47,7 +47,7 @@ Upload a long video. AuraClip AI:
 
 ### 1.5 Competitive landscape
 Direct: Opus Clip, Vizard, Klap, SendShort, 2Short. Adjacent: Descript,
-CapCut, Submagic (captions only). **AuraClip's wedge:** live WYSIWYG caption
+CapCut, Submagic (captions only). **Cliporo's wedge:** live WYSIWYG caption
 editor (preview == export), strong caption-style control, transparent
 credit-based pricing, and a polished mobile-first UI on both web and native.
 

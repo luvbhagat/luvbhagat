@@ -7,5 +7,5 @@ export const RENDER_COST = 10;
 export const CREDIT_PACK = {
   credits: 200,
   amountCents: 900, // $9.00
-  name: "AuraClip AI — 200 credits",
+  name: "Cliporo AI — 200 credits",
 };

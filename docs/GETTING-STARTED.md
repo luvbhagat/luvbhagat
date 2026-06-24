@@ -1,4 +1,4 @@
-# AuraClip AI — Getting Started (Full First-Run Guide)
+# Cliporo AI — Getting Started (Full First-Run Guide)
 
 This single guide takes you from a fresh clone to a working app: sign in →
 upload → transcribe → AI-detect clips → caption/trim → render a vertical MP4 →

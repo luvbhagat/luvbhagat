@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 // Body font (Inter) and display/heading font (Space Grotesk) — same pairing
-// used in the AuraClip mockups.
+// used in the Cliporo mockups.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -16,9 +16,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "AuraClip AI — Turn long videos into scroll-stopping shorts",
+  title: "Cliporo AI — Turn long videos into scroll-stopping shorts",
   description:
-    "AuraClip AI turns long videos into short, vertical, captioned clips for social media.",
+    "Cliporo AI turns long videos into short, vertical, captioned clips for social media.",
 };
 
 export default function RootLayout({

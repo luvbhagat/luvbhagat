@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Top navigation bar. Shows the AuraClip AI logo and, when the user is signed
+// Top navigation bar. Shows the Cliporo AI logo and, when the user is signed
 // in, a "Sign out" button. Sign out is a tiny form that POSTs to a server
 // route which clears the session.
 export function Navbar({ showSignOut = false }: { showSignOut?: boolean }) {
@@ -14,7 +14,7 @@ export function Navbar({ showSignOut = false }: { showSignOut?: boolean }) {
             <Sparkles className="size-4" />
           </span>
           <span className="font-display text-lg font-semibold">
-            AuraClip <span className="text-brand-gradient">AI</span>
+            Cliporo <span className="text-brand-gradient">AI</span>
           </span>
         </Link>
 

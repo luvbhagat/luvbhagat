@@ -1,4 +1,4 @@
--- AuraClip AI — Phase 1: video ingestion
+-- Cliporo AI — Phase 1: video ingestion
 -- Run this in your Supabase project: Dashboard -> SQL Editor -> New query ->
 -- paste -> Run. Safe to re-run (uses IF NOT EXISTS / ON CONFLICT).
 

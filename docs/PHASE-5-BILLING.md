@@ -1,4 +1,4 @@
-# AuraClip AI — Phase 5 Setup (Credits & Billing)
+# Cliporo AI — Phase 5 Setup (Credits & Billing)
 
 Adds a credit system: every user starts with **100 free credits**, rendering a
 clip costs **10 credits**, and users can **buy more** via Stripe.

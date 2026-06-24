@@ -1,4 +1,4 @@
-// AuraClip AI — render worker (run locally with: npm run worker)
+// Cliporo AI — render worker (run locally with: npm run worker)
 //
 // Picks up clips with status "queued", renders each to a 1080x1920 MP4 with
 // captions burned in via FFmpeg, uploads the result to Supabase Storage, and
@@ -156,7 +156,7 @@ async function renderClip(clip) {
     .single();
   if (vErr || !video) throw new Error("Source video not found");
 
-  const dir = mkdtempSync(join(tmpdir(), "auraclip-"));
+  const dir = mkdtempSync(join(tmpdir(), "cliporo-"));
   try {
     const { data: blob, error: dErr } = await supabase.storage
       .from("videos")

@@ -1,4 +1,4 @@
-# AuraClip AI — Phase 2 Setup (AI Clip Detection)
+# Cliporo AI — Phase 2 Setup (AI Clip Detection)
 
 Phase 2 adds AI that reads a video's transcript and picks the best moments to
 turn into short clips. It uses Claude (Anthropic).

@@ -1,4 +1,4 @@
-# AuraClip AI — Phase 3 Setup (Clip Editor)
+# Cliporo AI — Phase 3 Setup (Clip Editor)
 
 Phase 3 adds an in-browser clip editor: a live 9:16 preview of the source
 video with animated captions, caption-style presets, a highlight color, and

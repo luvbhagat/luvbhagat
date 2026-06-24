@@ -1,4 +1,4 @@
--- AuraClip AI — Phase 3b: rendered clip storage
+-- Cliporo AI — Phase 3b: rendered clip storage
 -- Run in Supabase: SQL Editor -> New query -> paste -> Run. Safe to re-run.
 
 -- Private bucket for finished MP4s (one folder per user).

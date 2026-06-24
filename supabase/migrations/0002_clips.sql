@@ -1,4 +1,4 @@
--- AuraClip AI — Phase 2: AI clip detection
+-- Cliporo AI — Phase 2: AI clip detection
 -- Run this in Supabase: SQL Editor -> New query -> paste -> Run.
 -- Safe to re-run.
 

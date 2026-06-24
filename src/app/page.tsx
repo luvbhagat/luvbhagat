@@ -21,7 +21,7 @@ export default function Home() {
         </h1>
 
         <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-          AuraClip AI finds the best moments in your videos and turns them into
+          Cliporo AI finds the best moments in your videos and turns them into
           short, vertical, captioned clips ready for social media.
         </p>
 
@@ -36,7 +36,7 @@ export default function Home() {
       </main>
 
       <footer className="py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} AuraClip AI
+        © {new Date().getFullYear()} Cliporo AI
       </footer>
     </div>
   );

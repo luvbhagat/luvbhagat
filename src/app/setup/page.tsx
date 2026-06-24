@@ -118,7 +118,7 @@ export default async function SetupPage() {
     <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-6 px-4 py-10">
       <div>
         <h1 className="font-display text-2xl font-bold">
-          AuraClip <span className="text-brand-gradient">AI</span> setup check
+          Cliporo <span className="text-brand-gradient">AI</span> setup check
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           This page updates as you fill in <code>.env.local</code> and run the

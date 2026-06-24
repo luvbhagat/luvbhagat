@@ -83,7 +83,7 @@ export default async function ProjectPage({
           {clips.length === 0 ? (
             <div className="glass flex flex-col items-center gap-4 rounded-2xl p-10 text-center">
               <p className="text-sm text-muted-foreground">
-                Transcription is done. Now let AuraClip AI find the most
+                Transcription is done. Now let Cliporo AI find the most
                 clip-worthy moments.
               </p>
               <DetectClips id={video.id} />

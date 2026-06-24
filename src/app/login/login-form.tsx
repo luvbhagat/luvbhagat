@@ -137,7 +137,7 @@ export function LoginForm() {
 
       {/* Toggle between sign in / sign up */}
       <p className="text-center text-sm text-muted-foreground">
-        {mode === "signin" ? "New to AuraClip?" : "Already have an account?"}{" "}
+        {mode === "signin" ? "New to Cliporo?" : "Already have an account?"}{" "}
         <button
           type="button"
           className="font-medium text-foreground underline-offset-4 hover:underline"

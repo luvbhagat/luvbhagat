@@ -1,4 +1,4 @@
-# AuraClip AI — Phase 1 Setup (Upload + Transcription)
+# Cliporo AI — Phase 1 Setup (Upload + Transcription)
 
 This phase adds real video upload (Supabase Storage) and transcription
 (AssemblyAI). Do these 3 things once, then it works locally and on Vercel.

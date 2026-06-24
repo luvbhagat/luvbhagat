@@ -1,4 +1,4 @@
--- AuraClip AI — Phase 3: clip editor config
+-- Cliporo AI — Phase 3: clip editor config
 -- Run in Supabase: SQL Editor -> New query -> paste -> Run. Safe to re-run.
 
 alter table public.clips

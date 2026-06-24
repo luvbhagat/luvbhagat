@@ -1,4 +1,4 @@
-# AuraClip AI — Documentation
+# Cliporo AI — Documentation
 
 **New here? Start with [GETTING-STARTED.md](./GETTING-STARTED.md)** — the full
 first-run guide (install → env → migrations → run → render → deploy).

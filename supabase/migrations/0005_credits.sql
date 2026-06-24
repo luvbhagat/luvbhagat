@@ -1,4 +1,4 @@
--- AuraClip AI — Phase 5: credits & billing
+-- Cliporo AI — Phase 5: credits & billing
 -- Run in Supabase: SQL Editor -> New query -> paste -> Run. Safe to re-run.
 
 -- 1) profiles: one row per user, caches the credit balance.

@@ -1,4 +1,4 @@
-# AuraClip AI — Phase 3b Setup (Render to MP4, local FFmpeg worker)
+# Cliporo AI — Phase 3b Setup (Render to MP4, local FFmpeg worker)
 
 This makes the **Render clip** button produce a real downloadable vertical MP4
 with captions burned in. It uses **FFmpeg on your own machine** — no AWS, no
