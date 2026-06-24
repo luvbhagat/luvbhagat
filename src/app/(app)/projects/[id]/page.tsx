@@ -64,16 +64,21 @@ export default async function ProjectPage({
         )}
       </div>
 
-      {(video.status === "transcribing" || video.status === "uploaded") && (
+      {(video.status === "importing" ||
+        video.status === "transcribing" ||
+        video.status === "analyzing" ||
+        video.status === "rendering" ||
+        video.status === "uploaded") && (
         <div className="glass rounded-2xl p-5">
-          <TranscribeWatcher id={video.id} />
+          <TranscribeWatcher id={video.id} status={video.status} />
         </div>
       )}
 
       {video.status === "failed" && (
         <div className="glass rounded-2xl p-5">
           <p className="text-sm text-destructive">
-            Transcription failed{video.error ? `: ${video.error}` : "."}
+            {video.source_url ? "Import failed" : "Transcription failed"}
+            {video.error ? `: ${video.error}` : "."}
           </p>
         </div>
       )}

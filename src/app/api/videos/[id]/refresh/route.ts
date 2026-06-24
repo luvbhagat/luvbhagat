@@ -28,11 +28,19 @@ export async function POST(
 
   const { data: video } = await supabase
     .from("videos")
-    .select("id, status, assemblyai_id")
+    .select("id, status, assemblyai_id, source_url")
     .eq("id", id)
     .single();
   if (!video) {
     return NextResponse.json({ error: "Video not found" }, { status: 404 });
+  }
+
+  // YouTube imports are driven end-to-end by the local worker, which updates the
+  // status directly as it downloads, transcribes, analyzes, and renders. We must
+  // NOT poll AssemblyAI here or we'd race the worker (e.g. flip to "ready" before
+  // it finishes detecting clips). Just report the current status it's set.
+  if (video.source_url) {
+    return NextResponse.json({ status: video.status });
   }
 
   // Nothing to poll unless it is actively transcribing.
