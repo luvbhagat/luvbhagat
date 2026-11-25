@@ -1,15 +1,40 @@
 import { Clock, Download, Film } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { PostClip } from "@/components/app/post-clip";
 import type { Clip } from "@/lib/types";
 
 export default async function HistoryPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data } = await supabase
     .from("clips")
     .select("*")
     .eq("status", "ready")
     .order("created_at", { ascending: false });
   const clips = (data ?? []) as Clip[];
+
+  // Is YouTube connected? (controls whether the Post button is active)
+  const { data: yt } = await supabase
+    .from("social_connections")
+    .select("provider")
+    .eq("user_id", user?.id ?? "")
+    .eq("provider", "youtube")
+    .maybeSingle();
+  const youtubeConnected = Boolean(yt);
+
+  // Map clips that have already been posted to YouTube -> their live URL.
+  const { data: posts } = await supabase
+    .from("social_posts")
+    .select("clip_id, remote_url")
+    .eq("user_id", user?.id ?? "")
+    .eq("provider", "youtube")
+    .eq("status", "posted");
+  const postedByClip = new Map(
+    (posts ?? []).map((p) => [p.clip_id as string, p.remote_url as string]),
+  );
 
   // Build short-lived download links for each finished MP4.
   const withUrls = await Promise.all(
@@ -54,16 +79,23 @@ export default async function HistoryPage() {
                   {new Date(clip.created_at).toLocaleString()}
                 </p>
               </div>
-              {url && (
-                <a
-                  href={url}
-                  download={`${clip.title}.mp4`}
-                  className="inline-flex h-9 items-center gap-2 rounded-md bg-[linear-gradient(90deg,var(--brand-pink),var(--brand-cyan))] px-4 text-sm font-semibold text-[#1a0e2e]"
-                >
-                  <Download className="size-4" />
-                  Download
-                </a>
-              )}
+              <div className="flex shrink-0 items-center gap-2">
+                {url && (
+                  <a
+                    href={url}
+                    download={`${clip.title}.mp4`}
+                    className="inline-flex size-9 items-center justify-center rounded-md bg-[linear-gradient(90deg,var(--brand-pink),var(--brand-cyan))] text-[#1a0e2e]"
+                    aria-label="Download MP4"
+                  >
+                    <Download className="size-4" />
+                  </a>
+                )}
+                <PostClip
+                  clipId={clip.id}
+                  youtubeConnected={youtubeConnected}
+                  postedUrl={postedByClip.get(clip.id) ?? null}
+                />
+              </div>
             </li>
           ))}
         </ul>

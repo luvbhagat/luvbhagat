@@ -156,6 +156,45 @@ export async function exchangeCode(
   };
 }
 
+// ── Refresh an expired access token ─────────────────────────────────────────
+// Google/TikTok return a fresh access token (and sometimes a new refresh
+// token). Throws if the provider rejects the refresh (e.g. revoked access).
+export async function refreshAccessToken(
+  p: SocialProvider,
+  refreshToken: string,
+): Promise<{
+  accessToken: string;
+  refreshToken: string | null;
+  expiresInSec: number | null;
+}> {
+  const def = PROVIDERS[p];
+  const body = new URLSearchParams({
+    [def.clientIdParam]: clientId(p)!,
+    client_secret: clientSecret(p)!,
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+  });
+  const res = await fetch(def.tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const json = (await res.json()) as Record<string, unknown>;
+  if (!res.ok || !json.access_token) {
+    throw new Error(
+      (json.error_description as string) ||
+        (json.error as string) ||
+        `Token refresh failed (${res.status})`,
+    );
+  }
+  return {
+    accessToken: String(json.access_token),
+    refreshToken: json.refresh_token ? String(json.refresh_token) : null,
+    expiresInSec:
+      typeof json.expires_in === "number" ? (json.expires_in as number) : null,
+  };
+}
+
 // ── Identity (best-effort; failures are non-fatal) ──────────────────────────
 export async function fetchIdentity(
   p: SocialProvider,
