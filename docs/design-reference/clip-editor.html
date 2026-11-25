@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cliporo AI — Clip Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root,[data-theme="dark"]{
+    --bg-1:#1a0e3a;--bg-2:#2e1454;--text:#F5F2FA;--text-dim:rgba(245,242,250,0.6);
+    --glass:rgba(255,255,255,0.08);--glass-strong:rgba(255,255,255,0.13);--glass-line:rgba(255,255,255,0.16);
+    --blob-op:0.5;--tab-active:#ff5fa8;
+  }
+  [data-theme="light"]{
+    --bg-1:#ffffff;--bg-2:#f1ecfa;--text:#1A1030;--text-dim:rgba(26,16,48,0.55);
+    --glass:rgba(255,255,255,0.6);--glass-strong:rgba(255,255,255,0.75);--glass-line:rgba(120,90,160,0.22);
+    --blob-op:0.2;--tab-active:#9b2fb0;
+  }
+  --pink:#ff5fa8;--cyan:#5fd0ff;--amber:#ffb347;
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;background:#0d0720;font-family:'Inter',sans-serif;
+    display:flex;flex-direction:column;align-items:center;gap:16px;padding:28px 16px 60px;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+  .toolbar{display:flex;gap:10px;align-items:center;background:#1b1140;padding:10px 14px;border-radius:30px;border:1px solid rgba(255,255,255,0.1);}
+  .toolbar span{color:#cfc6e8;font-size:12px;}
+  .toolbar button{border:none;cursor:pointer;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;}
+  .toolbar button.on{background:linear-gradient(90deg,#ff5fa8,#5fd0ff);color:#1a0e2e;}
+  .toolbar button.off{background:transparent;color:#9a8fc0;border:1px solid rgba(255,255,255,0.15);}
+
+  .phone{width:320px;height:680px;border-radius:42px;padding:12px;
+    background:linear-gradient(160deg,rgba(255,255,255,0.12),rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.18);box-shadow:0 30px 60px -20px rgba(10,2,30,0.7);}
+  .screen{width:100%;height:100%;border-radius:30px;overflow:hidden;position:relative;
+    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);
+    display:flex;flex-direction:column;transition:background .35s,color .35s;}
+  .blob{position:absolute;border-radius:50%;filter:blur(46px);opacity:var(--blob-op);}
+  .statusbar{display:flex;justify-content:space-between;padding:14px 22px 2px;font-size:13px;font-weight:600;position:relative;z-index:3;}
+  .ctx{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;position:relative;z-index:3;}
+  .ctx .back{width:30px;height:30px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-line);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+  .ctx .title{font-size:14px;font-weight:600;font-family:'Space Grotesk';flex:1;text-align:center;}
+  .render-btn{background:linear-gradient(90deg,var(--pink),#b85fff);border:none;color:#1a0e2e;font-weight:700;font-size:12px;padding:8px 16px;border-radius:20px;}
+
+  .body{flex:1;overflow:hidden;padding:6px 14px 0;position:relative;z-index:3;display:flex;flex-direction:column;}
+
+  /* live preview */
+  .preview{height:280px;border-radius:20px;position:relative;overflow:hidden;border:1px solid var(--glass-line);
+    background:radial-gradient(circle at 40% 25%,#ff8fc4 0%,transparent 50%),radial-gradient(circle at 65% 75%,#5fb8ff 0%,transparent 55%),linear-gradient(170deg,#371a6e,#140828);}
+  .live-badge{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;letter-spacing:0.06em;
+    background:rgba(255,95,168,0.9);color:#fff;padding:3px 9px;border-radius:12px;display:flex;align-items:center;gap:5px;}
+  .live-badge .pulse{width:6px;height:6px;border-radius:50%;background:#fff;}
+  .cap{position:absolute;bottom:54px;left:0;right:0;text-align:center;padding:0 20px;font-family:'Space Grotesk';font-weight:700;font-size:16px;line-height:1.3;color:#fff;}
+  .cap .active{color:var(--amber);display:inline-block;transform:scale(1.12);}
+  .play-ctrl{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:18px;align-items:center;}
+  .play-ctrl .btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+
+  /* trim scrubber */
+  .trim{margin-top:12px;}
+  .trim-track{height:40px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-line);position:relative;display:flex;align-items:center;padding:0 4px;overflow:hidden;}
+  .wave{display:flex;align-items:center;gap:2px;width:100%;height:26px;}
+  .wave i{flex:1;background:var(--text-dim);border-radius:1px;opacity:0.5;}
+  .trim-sel{position:absolute;top:0;bottom:0;left:18%;right:14%;border:2px solid var(--cyan);border-radius:8px;background:rgba(95,208,255,0.08);}
+  .trim-handle{position:absolute;top:0;bottom:0;width:8px;background:var(--cyan);border-radius:4px;}
+  .trim-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-top:4px;font-family:'Space Grotesk';}
+
+  /* tab strip */
+  .tabs{display:flex;gap:6px;margin-top:14px;}
+  .etab{flex:1;text-align:center;font-size:11px;font-weight:600;padding:8px 0;border-radius:12px;color:var(--text-dim);background:var(--glass);border:1px solid var(--glass-line);}
+  .etab.active{color:var(--tab-active);border-color:var(--tab-active);background:transparent;}
+
+  /* panel */
+  .panel{flex:1;margin-top:12px;overflow-y:auto;}
+  .panel-title{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;margin:0 2px 10px;}
+  .style-row{display:flex;gap:8px;margin-bottom:14px;}
+  .swatch{flex:1;height:48px;border-radius:10px;border:1.5px solid var(--glass-line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text-dim);background:var(--glass);}
+  .swatch.active{border-color:var(--pink);color:var(--pink);}
+  .swatch.kara{font-family:'Space Grotesk';}
+  .color-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;}
+  .color-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--glass-line);}
+  .toggle-line{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--glass-line);}
+  .toggle-line:last-child{border:none;}
+  .toggle-line .lb{font-size:13px;}
+  .toggle-line .desc{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+  .sw{width:38px;height:22px;border-radius:20px;background:var(--glass-line);position:relative;}
+  .sw.on{background:var(--pink);}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;}
+  .sw.on::after{left:18px;}
+  .trans-list{display:flex;flex-direction:column;gap:8px;}
+  .trans{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-line);font-size:12.5px;}
+  .trans.sel{border-color:var(--cyan);}
+  .trans .tag{font-size:10px;color:var(--text-dim);font-family:'Space Grotesk';}
+  .label-under{color:#8f84b8;font-size:12px;font-family:'Space Grotesk';text-align:center;margin-top:6px;}
+
+  .seg{display:none;}
+  .seg.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span>Theme:</span>
+  <button class="on" id="bd" onclick="setTheme('dark')">Dark</button>
+  <button class="off" id="bl" onclick="setTheme('light')">Light</button>
+  <span style="margin-left:8px;">Panel:</span>
+  <button class="off" onclick="seg('captions')">Captions</button>
+  <button class="off" onclick="seg('style')">Style</button>
+  <button class="off" onclick="seg('trans')">Transitions</button>
+  <button class="off" onclick="seg('fx')">Effects</button>
+</div>
+
+<div class="phone">
+  <div class="screen" data-theme="dark" id="screen">
+    <div class="blob" style="width:200px;height:200px;background:#5fd0ff;top:-50px;left:-40px;"></div>
+    <div class="blob" style="width:180px;height:180px;background:#ff5fa8;bottom:60px;right:-50px;"></div>
+    <div class="statusbar"><span>9:41</span><span>▂▄▆ 📶 🔋</span></div>
+    <div class="ctx">
+      <div class="back">←</div>
+      <div class="title">Rest isn't a reward</div>
+      <button class="render-btn">Render · 3</button>
+    </div>
+
+    <div class="body">
+      <!-- LIVE PREVIEW -->
+      <div class="preview">
+        <div class="live-badge"><span class="pulse"></span>LIVE PREVIEW</div>
+        <div class="cap">i used to think <span class="active">rest</span> was earned</div>
+        <div class="play-ctrl">
+          <div class="btn">⏮</div><div class="btn">⏸</div><div class="btn">⏭</div>
+        </div>
+      </div>
+
+      <!-- TRIM -->
+      <div class="trim">
+        <div class="trim-track">
+          <div class="wave" id="wave"></div>
+          <div class="trim-sel"><div class="trim-handle" style="left:-4px;"></div><div class="trim-handle" style="right:-4px;"></div></div>
+        </div>
+        <div class="trim-labels"><span>00:00</span><span>trim · 0:34 selected</span><span>00:46</span></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <div class="etab active" id="t-captions" onclick="seg('captions')">Captions</div>
+        <div class="etab" id="t-style" onclick="seg('style')">Style</div>
+        <div class="etab" id="t-trans" onclick="seg('trans')">Transitions</div>
+        <div class="etab" id="t-fx" onclick="seg('fx')">Effects</div>
+      </div>
+
+      <!-- PANELS -->
+      <div class="panel">
+        <div class="seg show" id="seg-captions">
+          <div class="panel-title">Edit AI caption text</div>
+          <div class="trans" style="display:block;"><div style="color:var(--text-dim);font-size:11px;margin-bottom:4px;">0:00 – 0:03</div>i used to think rest was something you earned</div>
+          <div style="height:8px;"></div>
+          <div class="trans" style="display:block;"><div style="color:var(--text-dim);font-size:11px;margin-bottom:4px;">0:03 – 0:07</div>but the body keeps a different kind of score</div>
+          <div class="panel-title" style="margin-top:14px;">Tap any line to fix a transcription error</div>
+        </div>
+
+        <div class="seg" id="seg-style">
+          <div class="panel-title">Caption animation</div>
+          <div class="style-row">
+            <div class="swatch kara active">Karaoke<br>Pop</div>
+            <div class="swatch">Word<br>Reveal</div>
+            <div class="swatch">Bounce</div>
+          </div>
+          <div class="style-row">
+            <div class="swatch">Typewriter</div>
+            <div class="swatch">Clean<br>Lines</div>
+            <div class="swatch" style="opacity:0.4;">+ more</div>
+          </div>
+          <div class="panel-title">Accent color</div>
+          <div class="color-row">
+            <div class="color-dot" style="background:#ffb347;border-color:#ffb347;"></div>
+            <div class="color-dot" style="background:#ff5fa8;"></div>
+            <div class="color-dot" style="background:#5fd0ff;"></div>
+            <div class="color-dot" style="background:#fff;"></div>
+          </div>
+          <div class="panel-title">Position</div>
+          <div class="style-row">
+            <div class="swatch">Top</div><div class="swatch">Center</div><div class="swatch active">Bottom</div>
+          </div>
+        </div>
+
+        <div class="seg" id="seg-trans">
+          <div class="panel-title">Clip in / out transition</div>
+          <div class="trans-list">
+            <div class="trans sel">Fade <span class="tag">in &amp; out · 300ms</span></div>
+            <div class="trans">Cut <span class="tag">none</span></div>
+            <div class="trans">Slide <span class="tag">directional</span></div>
+            <div class="trans">Zoom punch <span class="tag">on emphasis</span></div>
+            <div class="trans">Whip blur <span class="tag">use sparingly</span></div>
+          </div>
+        </div>
+
+        <div class="seg" id="seg-fx">
+          <div class="panel-title">Effects</div>
+          <div class="toggle-line"><div><div class="lb">Zoom on emphasis</div><div class="desc">Subtle punch-in on emotional beats</div></div><div class="sw on"></div></div>
+          <div class="toggle-line"><div><div class="lb">Auto emojis</div><div class="desc">AI adds emoji on key words</div></div><div class="sw on"></div></div>
+          <div class="toggle-line"><div><div class="lb">Remove watermark</div><div class="desc">Included on Pro</div></div><div class="sw on"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="label-under">Clip Editor · live preview + captions + transitions</div>
+
+<script>
+  // build fake waveform
+  const w=document.getElementById('wave');
+  for(let i=0;i<60;i++){const b=document.createElement('i');b.style.height=(6+Math.abs(Math.sin(i*0.6))*20)+'px';w.appendChild(b);}
+  function setTheme(m){document.getElementById('screen').setAttribute('data-theme',m);
+    document.getElementById('bd').className=m==='dark'?'on':'off';document.getElementById('bl').className=m==='light'?'on':'off';}
+  function seg(name){
+    ['captions','style','trans','fx'].forEach(s=>{
+      document.getElementById('seg-'+s).classList.toggle('show', s===name);
+      document.getElementById('t-'+s).classList.toggle('active', s===name);
+    });
+  }
+</script>
+</body>
+</html>
