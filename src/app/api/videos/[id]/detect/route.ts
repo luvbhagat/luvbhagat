@@ -39,7 +39,13 @@ type DetectedClip = {
   title: string;
   score: number;
   quote: string;
+  hook: number;
+  emotion: number;
+  shareability: number;
+  trend: number;
 };
+
+const clamp100 = (n: number) => Math.max(0, Math.min(100, Math.round(n ?? 0)));
 
 export async function POST(
   _request: Request,
@@ -118,14 +124,41 @@ export async function POST(
               title: { type: "string", description: "Short, punchy hook/title" },
               score: {
                 type: "integer",
-                description: "Engagement score 0-100 (higher = more viral)",
+                description:
+                  "Overall virality / hype score 0-100 (higher = more viral)",
               },
               quote: {
                 type: "string",
                 description: "The strongest sentence from the clip",
               },
+              hook: {
+                type: "integer",
+                description: "0-100: how strong the first ~3 seconds are",
+              },
+              emotion: {
+                type: "integer",
+                description: "0-100: emotional pull (funny, moving, surprising)",
+              },
+              shareability: {
+                type: "integer",
+                description: "0-100: how likely a viewer is to share it",
+              },
+              trend: {
+                type: "integer",
+                description: "0-100: fit with current short-form trends",
+              },
             },
-            required: ["startSec", "endSec", "title", "score", "quote"],
+            required: [
+              "startSec",
+              "endSec",
+              "title",
+              "score",
+              "quote",
+              "hook",
+              "emotion",
+              "shareability",
+              "trend",
+            ],
           },
         },
       },
@@ -152,7 +185,11 @@ export async function POST(
           "emotional, insightful, funny, or surprising content.\n" +
           "- Snap startSec/endSec to natural sentence boundaries using the " +
           "timestamps provided.\n" +
-          "- score is 0-100 for how likely the clip is to perform well.\n" +
+          "- Rate each clip on four 0-100 factors: hook (first 3s), emotion, " +
+          "shareability, and trend-fit. Then set score to the overall 0-100 " +
+          "virality estimate (roughly a weighted blend of those factors, " +
+          "weighting hook and shareability most).\n" +
+          "- Order clips from most to least viral.\n" +
           "- Do not overlap clips.\n\n" +
           "Transcript:\n" +
           timed,
@@ -181,7 +218,13 @@ export async function POST(
         user_id: user.id,
         start_sec: Number(startSec.toFixed(2)),
         end_sec: Number(endSec.toFixed(2)),
-        score: Math.max(0, Math.min(100, Math.round(c.score))),
+        score: clamp100(c.score),
+        hype: {
+          hook: clamp100(c.hook),
+          emotion: clamp100(c.emotion),
+          shareability: clamp100(c.shareability),
+          trend: clamp100(c.trend),
+        },
         title: c.title.slice(0, 200),
         transcript_slice: sliceWords(words, startSec, endSec),
         status: "candidate" as const,

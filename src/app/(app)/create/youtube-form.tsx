@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Youtube, Loader2 } from "lucide-react";
+import { Link2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-// Accepts the common YouTube link shapes: watch?v=, youtu.be/, shorts/, embed/,
-// live/, with or without www/m and extra query params.
-const YT_RE =
-  /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/|embed\/|live\/)[\w-]{11}|youtu\.be\/[\w-]{11})/i;
+// Accept any http(s) link. The local worker uses yt-dlp, which supports
+// YouTube, Twitch VODs/clips, Vimeo, Kick, and direct .mp4 links, among many
+// others. We do a light sanity check and let the worker do the real download.
+const URL_RE = /^https?:\/\/[^\s.]+\.[^\s]{2,}/i;
 
-export function YouTubeForm() {
+export function LinkForm() {
   const router = useRouter();
   const supabase = createClient();
   const [url, setUrl] = useState("");
@@ -20,8 +20,8 @@ export function YouTubeForm() {
 
   async function handleImport() {
     const trimmed = url.trim();
-    if (!YT_RE.test(trimmed)) {
-      setError("That doesn't look like a YouTube link. Paste a full video URL.");
+    if (!URL_RE.test(trimmed)) {
+      setError("That doesn't look like a link. Paste a full video or stream URL (https://…).");
       return;
     }
     setBusy(true);
@@ -38,7 +38,7 @@ export function YouTubeForm() {
 
     // Create the project now; the worker downloads the video and transcribes it.
     // We don't know the real title yet, so use the link until the worker fills
-    // in the actual YouTube title.
+    // in the actual title.
     const { data: inserted, error: insErr } = await supabase
       .from("videos")
       .insert({
@@ -63,7 +63,7 @@ export function YouTubeForm() {
     <div className="flex flex-col gap-3">
       <div className="glass flex items-center gap-3 rounded-2xl p-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
-          <Youtube className="size-5" />
+          <Link2 className="size-5" />
         </span>
         <input
           type="url"
@@ -76,7 +76,7 @@ export function YouTubeForm() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !busy) handleImport();
           }}
-          placeholder="Paste a YouTube link…"
+          placeholder="Paste a video or stream link…"
           disabled={busy}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
@@ -99,15 +99,16 @@ export function YouTubeForm() {
             Starting import…
           </>
         ) : (
-          "Import from YouTube"
+          "Import from link"
         )}
       </Button>
 
       <p className="text-xs text-muted-foreground">
-        Importing runs on your local worker (<code>npm run worker</code>): it
-        downloads the video, finds the best moments, and renders the shorts. We
-        only keep the finished clips — never the source video. Billed by length
-        (1 credit per minute).
+        Works with YouTube, Twitch VODs/clips, Vimeo, Kick, and direct video
+        links. Importing runs on your local worker (<code>npm run worker</code>):
+        it downloads the video, finds the best moments, and renders the shorts.
+        We only keep the finished clips — never the source. Billed by length (1
+        credit per minute).
       </p>
     </div>
   );

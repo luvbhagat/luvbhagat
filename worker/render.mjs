@@ -132,10 +132,18 @@ function buildAss(clip) {
   const style = captions.style ?? "karaoke";
   const position = captions.position ?? "bottom";
   const accent = assColor(captions.accent ?? "#5fd0ff");
+  const sizeScale = Number(captions.size) || 1;
+  const fontSize = Math.max(40, Math.min(160, Math.round(88 * sizeScale)));
 
   const startSec = Number(clip.start_sec);
   const endSec = Number(clip.end_sec);
-  const words = (clip.transcript_slice?.words ?? []).filter(
+  // Prefer the user's edited caption words (typo fixes) when present; they
+  // carry the same ms timings as the transcript.
+  const sourceWords =
+    captions.words && captions.words.length > 0
+      ? captions.words
+      : (clip.transcript_slice?.words ?? []);
+  const words = sourceWords.filter(
     (w) => w.start / 1000 >= startSec - 0.05 && w.end / 1000 <= endSec + 0.05,
   );
 
@@ -157,7 +165,7 @@ function buildAss(clip) {
     "OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, " +
     "ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, " +
     "MarginL, MarginR, MarginV, Encoding\n" +
-    `Style: Cap,Arial,88,${primary},${secondary},&H00000000,&H64000000,` +
+    `Style: Cap,Arial,${fontSize},${primary},${secondary},&H00000000,&H64000000,` +
     `-1,0,0,0,100,100,0,0,1,4,2,${align},80,80,${marginV},1\n\n` +
     "[Events]\n" +
     "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, " +
@@ -368,14 +376,34 @@ async function detectClips(words) {
               title: { type: "string", description: "Short, punchy hook/title" },
               score: {
                 type: "integer",
-                description: "Engagement score 0-100 (higher = more viral)",
+                description: "Overall virality / hype score 0-100",
               },
               quote: {
                 type: "string",
                 description: "The strongest sentence from the clip",
               },
+              hook: { type: "integer", description: "0-100: first ~3 seconds" },
+              emotion: { type: "integer", description: "0-100: emotional pull" },
+              shareability: {
+                type: "integer",
+                description: "0-100: likelihood to share",
+              },
+              trend: {
+                type: "integer",
+                description: "0-100: fit with current trends",
+              },
             },
-            required: ["startSec", "endSec", "title", "score", "quote"],
+            required: [
+              "startSec",
+              "endSec",
+              "title",
+              "score",
+              "quote",
+              "hook",
+              "emotion",
+              "shareability",
+              "trend",
+            ],
           },
         },
       },
@@ -402,7 +430,10 @@ async function detectClips(words) {
           "emotional, insightful, funny, or surprising content.\n" +
           "- Snap startSec/endSec to natural sentence boundaries using the " +
           "timestamps provided.\n" +
-          "- score is 0-100 for how likely the clip is to perform well.\n" +
+          "- Rate each clip 0-100 on hook (first 3s), emotion, shareability, " +
+          "and trend-fit, then set score to the overall 0-100 virality " +
+          "estimate (weight hook and shareability most).\n" +
+          "- Order clips from most to least viral.\n" +
           "- Do not overlap clips.\n\n" +
           "Transcript:\n" +
           timed,
@@ -422,6 +453,12 @@ async function detectClips(words) {
         start_sec: Number(startSec.toFixed(2)),
         end_sec: Number(endSec.toFixed(2)),
         score: Math.max(0, Math.min(100, Math.round(c.score))),
+        hype: {
+          hook: Math.max(0, Math.min(100, Math.round(c.hook ?? 0))),
+          emotion: Math.max(0, Math.min(100, Math.round(c.emotion ?? 0))),
+          shareability: Math.max(0, Math.min(100, Math.round(c.shareability ?? 0))),
+          trend: Math.max(0, Math.min(100, Math.round(c.trend ?? 0))),
+        },
         title: String(c.title).slice(0, 200),
         transcript_slice: sliceWords(words, startSec, endSec),
       };
@@ -433,11 +470,54 @@ async function detectClips(words) {
 
 // Cut + caption one clip from a local source file and upload the MP4 to the
 // "renders" bucket. Returns the storage key. Shared by both pipelines.
+// Build the 1080x1920 filtergraph for the chosen layout. Every graph ends by
+// burning in subs.ass and outputs label [v].
+//   fill    — cover the frame (center crop). Default.
+//   fit     — whole frame fit inside, blurred copy behind (no cropping).
+//   gaming  — top half = facecam (top crop), bottom half = gameplay.
+//   podcast — speaker fit by width on a heavily blurred, dim backdrop.
+function layoutFilter(layout) {
+  switch (layout) {
+    case "fit":
+      return (
+        "[0:v]split=2[bg][fg];" +
+        "[bg]scale=1080:1920:force_original_aspect_ratio=increase," +
+        "crop=1080:1920,boxblur=20:2,eq=brightness=-0.08[bgb];" +
+        "[fg]scale=1080:1920:force_original_aspect_ratio=decrease[fgs];" +
+        "[bgb][fgs]overlay=(W-w)/2:(H-h)/2,ass=subs.ass[v]"
+      );
+    case "podcast":
+      return (
+        "[0:v]split=2[bg][fg];" +
+        "[bg]scale=1080:1920:force_original_aspect_ratio=increase," +
+        "crop=1080:1920,boxblur=40:3,eq=brightness=-0.25[bgb];" +
+        "[fg]scale=980:-2[fgs];" +
+        "[bgb][fgs]overlay=(W-w)/2:(H-h)/2,ass=subs.ass[v]"
+      );
+    case "gaming":
+      return (
+        "[0:v]split=2[top][bot];" +
+        "[top]scale=1080:960:force_original_aspect_ratio=increase," +
+        "crop=1080:960:(iw-1080)/2:0[topc];" +
+        "[bot]scale=1080:960:force_original_aspect_ratio=increase," +
+        "crop=1080:960[botc];" +
+        "[topc][botc]vstack=inputs=2,ass=subs.ass[v]"
+      );
+    case "fill":
+    default:
+      return (
+        "[0:v]scale=1080:1920:force_original_aspect_ratio=increase," +
+        "crop=1080:1920,ass=subs.ass[v]"
+      );
+  }
+}
+
 async function renderClipToStorage(dir, inputFile, clip) {
   writeFileSync(join(dir, "subs.ass"), buildAss(clip));
 
   const start = Number(clip.start_sec);
   const dur = Math.max(1, Number(clip.end_sec) - start);
+  const layout = clip.edit_config?.layout ?? "fill";
 
   await runFfmpeg(
     [
@@ -445,9 +525,9 @@ async function renderClipToStorage(dir, inputFile, clip) {
       "-ss", String(start),
       "-i", inputFile,
       "-t", String(dur),
-      "-vf",
-      "scale=1080:1920:force_original_aspect_ratio=increase," +
-        "crop=1080:1920,ass=subs.ass",
+      "-filter_complex", layoutFilter(layout),
+      "-map", "[v]",
+      "-map", "0:a?",
       "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
       "-c:a", "aac", "-b:a", "128k",
       "-movflags", "+faststart",

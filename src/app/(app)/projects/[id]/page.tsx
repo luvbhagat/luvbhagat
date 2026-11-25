@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Flame } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/app/status-badge";
 import { TranscribeWatcher } from "./watcher";
@@ -99,29 +99,51 @@ export default async function ProjectPage({
                 {clips.length} clip{clips.length === 1 ? "" : "s"} found
               </h2>
               <ul className="flex flex-col gap-3">
-                {clips.map((clip) => {
+                {clips.map((clip, idx) => {
                   const len = formatDuration(
                     Number(clip.end_sec) - Number(clip.start_sec),
                   );
+                  // Clips come ordered by score desc, so index 0 is the best.
+                  const isTop = idx === 0 && clip.score > 0;
                   return (
                     <li key={clip.id}>
                       <Link
                         href={`/projects/${video.id}/clips/${clip.id}`}
-                        className="glass flex flex-col gap-2 rounded-2xl p-4 transition-transform hover:scale-[1.01]"
+                        className={`glass flex flex-col gap-2 rounded-2xl p-4 transition-transform hover:scale-[1.01] ${
+                          isTop ? "ring-1 ring-brand-pink/50" : ""
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="font-medium">{clip.title}</p>
+                          <div className="min-w-0">
+                            {isTop && (
+                              <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-brand-pink/15 px-2 py-0.5 text-[11px] font-semibold text-brand-pink">
+                                <Flame className="size-3" />
+                                Most viral
+                              </span>
+                            )}
+                            <p className="font-medium">{clip.title}</p>
+                          </div>
                           <span
-                            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${scoreColor(
+                            className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${scoreColor(
                               clip.score,
                             )}`}
+                            title="Hype score (how likely to go viral)"
                           >
+                            <Flame className="size-3" />
                             {clip.score}
                           </span>
                         </div>
                         <p className="line-clamp-2 text-sm text-muted-foreground">
                           {clip.transcript_slice?.text}
                         </p>
+                        {clip.hype && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                            <span>Hook {clip.hype.hook}</span>
+                            <span>Emotion {clip.hype.emotion}</span>
+                            <span>Share {clip.hype.shareability}</span>
+                            <span>Trend {clip.hype.trend}</span>
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground">
                           {len} · starts at{" "}
                           {formatDuration(Number(clip.start_sec)) ?? "0:00"}
@@ -132,7 +154,8 @@ export default async function ProjectPage({
                 })}
               </ul>
               <p className="text-xs text-muted-foreground">
-                Tap a clip to caption, trim, and preview it in the editor.
+                🔥 Hype score ranks clips by viral potential. Tap a clip to pick
+                a layout, caption it, trim, and preview.
               </p>
             </section>
           )}
