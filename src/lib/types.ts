@@ -90,6 +90,34 @@ export const DEFAULT_ACCENT = "#5fd0ff";
 export const DEFAULT_LAYOUT: ClipLayout = "fill";
 export const DEFAULT_CAPTION_SIZE = 1;
 
+// ── Social connections ──────────────────────────────────────────────────────
+export type SocialProvider = "youtube" | "tiktok" | "instagram";
+
+// Safe columns only — access/refresh tokens are never sent to the browser.
+export type SocialConnection = {
+  id: string;
+  user_id: string;
+  provider: SocialProvider;
+  provider_account_id: string | null;
+  username: string | null;
+  token_expires_at: string | null;
+  scopes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const SOCIAL_PROVIDERS: SocialProvider[] = [
+  "tiktok",
+  "youtube",
+  "instagram",
+];
+
+export const SOCIAL_LABELS: Record<SocialProvider, string> = {
+  youtube: "YouTube",
+  tiktok: "TikTok",
+  instagram: "Instagram",
+};
+
 // The config a clip starts from before the user edits anything.
 export function defaultEditConfig(startSec: number, endSec: number): EditConfig {
   return {
