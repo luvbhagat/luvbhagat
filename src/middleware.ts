@@ -9,9 +9,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths EXCEPT for static files and images, so the
-     * session check only runs on real pages.
+     * Match all request paths EXCEPT:
+     *  - API and auth routes (they do their own auth — no need for the
+     *    middleware's getUser round-trip on every call)
+     *  - static files and images
+     * so the session check only runs on real page navigations.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api|auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

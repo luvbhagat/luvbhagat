@@ -9,31 +9,36 @@ export default async function HistoryPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data } = await supabase
-    .from("clips")
-    .select("*")
-    .eq("status", "ready")
-    .order("created_at", { ascending: false });
-  const clips = (data ?? []) as Clip[];
+  // Run the three independent reads at once instead of one-after-another.
+  const [clipsRes, ytRes, postsRes] = await Promise.all([
+    supabase
+      .from("clips")
+      .select("*")
+      .eq("status", "ready")
+      .order("created_at", { ascending: false }),
+    // Is YouTube connected? (controls whether the Post button is active)
+    supabase
+      .from("social_connections")
+      .select("provider")
+      .eq("user_id", user?.id ?? "")
+      .eq("provider", "youtube")
+      .maybeSingle(),
+    // Clips already posted to YouTube -> their live URL.
+    supabase
+      .from("social_posts")
+      .select("clip_id, remote_url")
+      .eq("user_id", user?.id ?? "")
+      .eq("provider", "youtube")
+      .eq("status", "posted"),
+  ]);
 
-  // Is YouTube connected? (controls whether the Post button is active)
-  const { data: yt } = await supabase
-    .from("social_connections")
-    .select("provider")
-    .eq("user_id", user?.id ?? "")
-    .eq("provider", "youtube")
-    .maybeSingle();
-  const youtubeConnected = Boolean(yt);
-
-  // Map clips that have already been posted to YouTube -> their live URL.
-  const { data: posts } = await supabase
-    .from("social_posts")
-    .select("clip_id, remote_url")
-    .eq("user_id", user?.id ?? "")
-    .eq("provider", "youtube")
-    .eq("status", "posted");
+  const clips = (clipsRes.data ?? []) as Clip[];
+  const youtubeConnected = Boolean(ytRes.data);
   const postedByClip = new Map(
-    (posts ?? []).map((p) => [p.clip_id as string, p.remote_url as string]),
+    (postsRes.data ?? []).map((p) => [
+      p.clip_id as string,
+      p.remote_url as string,
+    ]),
   );
 
   // Build short-lived download links for each finished MP4.
